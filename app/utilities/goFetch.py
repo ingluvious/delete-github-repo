@@ -6,15 +6,7 @@
 from __future__ import annotations
 
 import os
-from dotenv import load_dotenv
 from pathlib import Path
-
-SHARED_ENV_FILE = Path.home() / ".config" / ".env"
-load_dotenv(dotenv_path=SHARED_ENV_FILE, override=False)
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PROJECT_ENV_FILE = PROJECT_ROOT / ".env"
-load_dotenv(dotenv_path=PROJECT_ENV_FILE, override=True)
 
 REPOS = {
     "ingluvious":   ("ingluvious", "ingluvious"),

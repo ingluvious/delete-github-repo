@@ -1,5 +1,13 @@
 import sys
 import shutil
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Shared env (global across projects file)
+load_dotenv(dotenv_path=Path.home() / ".config" / ".env", override=False)
+# Project specific env file
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=True)
+
 import utilities.api as api
 from utilities.goFetch import REPOS, LOCAL_FOLDERS
 
