@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+OWNER="ingluvious"
+REPO="$1"
+
+if [ -z "$REPO" ]; then
+    echo "Usage: delete-personal-repo <repo>"
+    exit 1
+fi
+
+if [ -f "$HOME/.config/.env" ]; then
+    set -a
+    source "$HOME/.config/.env"
+    set +a
+fi
+
+PROJECT_ROOT="$(dirname "$(dirname "$DELETE_APP_PATH")")"
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    set -a
+    source "$PROJECT_ROOT/.env"
+    set +a
+fi
+
+python3 "$DELETE_APP_PATH" "$OWNER" "$REPO"

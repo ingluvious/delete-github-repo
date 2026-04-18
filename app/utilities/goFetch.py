@@ -1,13 +1,11 @@
 '''
 @Author: Ingluvious
 @Description:
-    Utility for interacting with the GitHub API.
-    Handles repo existence checks and deletion for orgs or personal accounts.
+    Loads environment variables and exposes the API layer.
 '''
 from __future__ import annotations
 
 import os
-import requests
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -18,15 +16,25 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ENV_FILE = PROJECT_ROOT / ".env"
 load_dotenv(dotenv_path=PROJECT_ENV_FILE, override=True)
 
-GITHUB_API = "https://api.github.com"
+REPOS = {
+    "ingluvious":   ("ingluvious", "ingluvious"),
+    "apatite":      ("ingluvious", "apatite"),
+    "tindangpinoy": ("ingluvious", "tindangpinoy")
+}
 
+_root = Path(os.getenv("ROOT_INGLUVIOUS_FOLDER", str(Path.home())))
+
+LOCAL_FOLDERS = {
+    "ingluvious":   _root / os.getenv("GITHUB_FOLDER_PERSONAL", "Dev - Personal"),
+    "apatite":      _root / os.getenv("GITHUB_FOLDER_APATITE", "Dev - Apatite"),
+    "tindangpinoy": _root / os.getenv("GITHUB_FOLDER_TINDANGPINOY", "Dev - Tingdang Pinoy"),
+}
 
 def _token() -> str:
-    token = os.getenv("GITHUB_TOKEN")
+    token = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
     if not token:
-        raise EnvironmentError("GITHUB_TOKEN is not set in your environment or .env file.")
+        raise EnvironmentError("GITHUB_PERSONAL_ACCESS_TOKEN is not set in your environment or .env file.")
     return token
-
 
 def _headers() -> dict:
     return {
@@ -35,22 +43,3 @@ def _headers() -> dict:
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
-
-def repo_exists(owner: str, repo: str) -> bool:
-    url = f"{GITHUB_API}/repos/{owner}/{repo}"
-    response = requests.get(url, headers=_headers())
-    return response.status_code == 200
-
-
-def delete_repo(owner: str, repo: str) -> None:
-    url = f"{GITHUB_API}/repos/{owner}/{repo}"
-    response = requests.delete(url, headers=_headers())
-
-    if response.status_code == 204:
-        print(f"Repo '{owner}/{repo}' has been deleted.")
-    elif response.status_code == 403:
-        raise PermissionError("You do not have permission to delete this repository.")
-    elif response.status_code == 404:
-        raise FileNotFoundError(f"Repository '{owner}/{repo}' not found.")
-    else:
-        raise RuntimeError(f"Unexpected response {response.status_code}: {response.text}")

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+#!/bin/bash
+set -euo pipefail
+
+# Detect repo root (where this script lives)
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BIN_DIR="$REPO_DIR/scripts"
+TARGET_DIR="/usr/local/bin"
+
+if [ ! -d "$BIN_DIR" ]; then
+  echo "❌ bin directory not found at: $BIN_DIR"
+  exit 1
+fi
+
+echo "🔎 Checking scripts in: $BIN_DIR"
+echo "📦 Installing into: $TARGET_DIR"
+echo " "
+
+# Determine if we need sudo
+if [ -w "$TARGET_DIR" ]; then
+  SUDO=""
+else
+  SUDO="sudo"
+fi
+
+for file in "$BIN_DIR"/*; do
+  if [ -f "$file" ]; then
+    name="$(basename "$file")"
+    target="$TARGET_DIR/$name"
+
+    echo "➡ Processing: $name"
+
+    # Ensure repo file is executable
+    chmod +x "$file"
+
+    # If file does not exist in /usr/local/bin, copy it first
+    if [ ! -e "$target" ]; then
+      echo "   📄 Copying $name to $TARGET_DIR"
+      $SUDO cp "$file" "$target"
+    fi
+
+    # Ensure target is executable
+    $SUDO chmod +x "$target"
+
+    # Replace with symlink pointing to repo (source of truth)
+    echo "   🔗 Linking $target -> $file"
+    $SUDO ln -sf "$file" "$target"
+
+    echo "   ✅ Done"
+    echo " "
+  fi
+done
+
+echo "🚀 Installation complete."
